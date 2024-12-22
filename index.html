@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit and Search Firebase</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+        }
+        h1 {
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f8f9fa;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Submit and Search Firebase</h1>
+
+        <form id="dataForm">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" required autocomplete="off">
+
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required autocomplete="off">
+
+            <label for="message">Message</label>
+            <input type="text" id="message" name="message" autocomplete="off">
+
+            <button type="submit">Submit</button>
+        </form>
+
+        <hr>
+
+        <h2>Search by Name</h2>
+        <form id="searchForm">
+            <label for="searchName">Name</label>
+            <input type="text" id="searchName" name="searchName" required autocomplete="off">
+            <button type="button" id="searchButton">Search</button>
+        </form>
+
+        <div id="result" class="result" style="display:none;"></div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-database-compat.js"></script>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBCyVDyoOx7FDRpNAUduZPKfJt2WxyioP4",
+            authDomain: "webfirebase-a47f3.firebaseapp.com",
+            projectId: "webfirebase-a47f3",
+            storageBucket: "webfirebase-a47f3.firebasestorage.app",
+            messagingSenderId: "745085511476",
+            appId: "1:745085511476:web:3928b0915969e141f1e761",
+            measurementId: "G-2ZH296CQ99"
+            };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Form submission to save data
+        document.getElementById('dataForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const message = document.getElementById('message').value;
+
+            // Push data to Firebase
+            firebase.database().ref('submissions/' + name).set({
+                name: name,
+                email: email,
+                message: message
+            }).then(() => {
+                alert('Data submitted successfully!');
+                document.getElementById('dataForm').reset();
+            }).catch(error => {
+                console.error('Error writing to Firebase: ', error);
+                alert('Error submitting data.');
+            });
+        });
+
+        // Search functionality
+        document.getElementById('searchButton').addEventListener('click', function() {
+            const searchName = document.getElementById('searchName').value;
+
+            // Get data from Firebase
+            firebase.database().ref('submissions/' + searchName).once('value').then(snapshot => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    document.getElementById('result').style.display = 'block';
+                    document.getElementById('result').innerHTML = `
+                        <p><strong>Name:</strong> ${data.name}</p>
+                        <p><strong>Email:</strong> ${data.email}</p>
+                        <p><strong>Message:</strong> ${data.message}</p>
+                    `;
+                } else {
+                    document.getElementById('result').style.display = 'block';
+                    document.getElementById('result').innerHTML = '<p>No data found for the given name.</p>';
+                }
+            }).catch(error => {
+                console.error('Error retrieving data: ', error);
+                alert('Error retrieving data.');
+            });
+        });
+    </script>
+
+</body>
+</html>
